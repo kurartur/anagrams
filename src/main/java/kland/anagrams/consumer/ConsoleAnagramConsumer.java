@@ -1,4 +1,4 @@
-package kland.anagrams;
+package kland.anagrams.consumer;
 
 import java.util.Set;
 import java.util.function.Consumer;

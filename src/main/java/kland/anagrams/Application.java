@@ -1,6 +1,14 @@
 package kland.anagrams;
 
-import java.io.*;
+import kland.anagrams.consumer.ConsoleAnagramConsumer;
+import kland.anagrams.finder.AnagramFinder;
+import kland.anagrams.finder.FlushingAnagramFinder;
+import kland.anagrams.wordprovider.DirectFileWordProvider;
+import kland.anagrams.wordprovider.WordProvider;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -20,24 +28,14 @@ public class Application {
             userError("Error: file doesn't exist or is not readable");
             return;
         }
-        Integer buffer = null;
-        if (args.length == 2) {
-            try{
-                buffer = Integer.parseInt(args[1]);
-            } catch (NumberFormatException e) {
-                userError("Error: word/line buffer is not an integer");
-                return;
-            }
-            if (buffer < 1) {
-                userError("Error: invalid buffer value");
-                return;
-            }
-        }
 
         try {
-            AnagramProvider anagramProvider = getAnagramProvider(file, buffer);
-            Consumer consumer = getAnagramConsumer();
-            anagramProvider.provide().values().forEach(consumer);
+            Long startTime = System.currentTimeMillis();
+            WordProvider wordProvider = getWordProvider(file);
+            AnagramFinder anagramFinder = getAnagramFinder();
+            Consumer<Set<String>> consumer = getAnagramConsumer();
+            anagramFinder.find(wordProvider, consumer);
+            System.out.println(System.currentTimeMillis() - startTime);
         } catch (FileNotFoundException fnfe) {
             userError("Error: file not found");
         } catch (Exception e) {
@@ -45,11 +43,12 @@ public class Application {
         }
     }
 
-    protected AnagramProvider getAnagramProvider(File file, Integer buffer) throws FileNotFoundException {
-        if (buffer != null)
-            return new FileAnagramProvider(file, buffer);
-        else
-            return new FileAnagramProvider(file);
+    protected WordProvider getWordProvider(File file) throws IOException {
+        return new DirectFileWordProvider(file);
+    }
+
+    protected AnagramFinder getAnagramFinder() throws FileNotFoundException {
+        return new FlushingAnagramFinder();
     }
 
     protected Consumer<Set<String>> getAnagramConsumer() {

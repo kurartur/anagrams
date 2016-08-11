@@ -33,7 +33,7 @@ public class CharacterSet {
         // count each character
         for (Character character : word.toCharArray()) {
             if (!tmpCharacters.containsKey(character)) {
-                tmpCharacters.put(character, 0);
+                tmpCharacters.put(character, 1);
             } else {
                 tmpCharacters.put(character, tmpCharacters.get(character) + 1);
             }

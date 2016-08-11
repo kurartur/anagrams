@@ -1,14 +1,13 @@
 package kland.anagrams;
 
+import kland.anagrams.finder.AnagramFinder;
+import kland.anagrams.wordprovider.WordProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.util.*;
+import java.io.*;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
@@ -20,8 +19,9 @@ public class ApplicationTest {
     private File testFile;
 
     private TestableApplication application = new TestableApplication();
-    private AnagramProvider anagramProvider = mock(AnagramProvider.class);
+    private AnagramFinder anagramFinder = mock(AnagramFinder.class);
     private Consumer<Set<String>> anagramConsumer = mock(Consumer.class);
+    private WordProvider wordProvider = mock(WordProvider.class);
 
     @Before
     public void setUp() throws Exception {
@@ -55,31 +55,10 @@ public class ApplicationTest {
     }
 
     @Test
-    public void testRun_notIntegerBuffer() throws Exception {
-        application.run(new String[]{testFile.getAbsolutePath(), "asd"});
-        assertEquals("Error: word/line buffer is not an integer\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
-    }
-
-    @Test
-    public void testRun_invalidBuffer() throws Exception {
-        application.run(new String[]{testFile.getAbsolutePath(), "0"});
-        assertEquals("Error: invalid buffer value\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
-    }
-
-    @Test
-    public void testGetAnagramProvider() throws Exception {
-        Application application = new Application();
-        FileAnagramProvider provider = (FileAnagramProvider)application.getAnagramProvider(testFile, 10);
-        assertEquals((Integer)10, provider.getWordBufferSize());
-        provider = (FileAnagramProvider)application.getAnagramProvider(testFile, null);
-        assertEquals(FileAnagramProvider.DEFAULT_WORD_BUFFER_SIZE, provider.getWordBufferSize());
-    }
-
-    @Test
     public void testRun_fileNotFound() throws Exception {
         new TestableApplication() {
             @Override
-            protected AnagramProvider getAnagramProvider(File file, Integer buffer) throws FileNotFoundException {
+            protected WordProvider getWordProvider(File file) throws FileNotFoundException {
                 throw new FileNotFoundException("File not found");
             }
         }.run(new String[]{testFile.getAbsolutePath(), "10"});
@@ -88,26 +67,27 @@ public class ApplicationTest {
 
     @Test
     public void testRun_exception() throws Exception {
-        when(anagramProvider.provide()).thenThrow(new RuntimeException("any error"));
+        doThrow(new RuntimeException("any error")).when(anagramFinder).find(wordProvider, anagramConsumer);
         application.run(new String[]{testFile.getAbsolutePath(), "10"});
         assertEquals("Error: any error\n", outContent.toString());
     }
 
     @Test
     public void testRun() throws Exception {
-        Map<CharacterSet, Set<String>> groups = new HashMap<>();
-        Set<String> anagrams = new HashSet<>(Arrays.asList("care", "acre"));
-        groups.put(new CharacterSet("care"), anagrams);
-        when(anagramProvider.provide()).thenReturn(new AnagramGroups(groups));
         application.run(new String[]{testFile.getAbsolutePath(), "3"});
-        verify(anagramConsumer, times(1)).accept(anagrams);
+        verify(anagramFinder, times(1)).find(wordProvider, anagramConsumer);
     }
 
     private class TestableApplication extends Application {
 
         @Override
-        protected AnagramProvider getAnagramProvider(File file, Integer buffer) throws FileNotFoundException {
-            return anagramProvider;
+        protected WordProvider getWordProvider(File file) throws IOException {
+            return wordProvider;
+        }
+
+        @Override
+        protected AnagramFinder getAnagramFinder() throws FileNotFoundException {
+            return anagramFinder;
         }
 
         @Override
