@@ -3,10 +3,26 @@ package kland.anagrams;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Describes character/count pairs used when creating words
+ * Case-sensitive
+ * Example:
+ * "missing" = {
+ *     "m" = 1,
+ *     "i" = 2,
+ *     "s" = 2,
+ *     "n" = 1,
+ *     "g" = 1
+ * }
+ */
 public class CharacterSet {
 
     Map<Character, Integer> characters;
 
+    /**
+     * Using provided word, create a set of characters from which this word was created
+     * @param word word, from which to create character set (case-sensitive)
+     */
     public CharacterSet(String word) {
         if (word == null || word.length() < 1)
             throw new IllegalArgumentException("Invalid word");

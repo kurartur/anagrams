@@ -27,5 +27,7 @@ public class CharacterSetTest {
         assertTrue(testMap.containsKey(new CharacterSet("care")));
         testMap.put(new CharacterSet("care"), "string2");
         assertEquals(1, testMap.size());
+        testMap.put(new CharacterSet("acre"), "string3");
+        assertEquals(1, testMap.size());
     }
 }
