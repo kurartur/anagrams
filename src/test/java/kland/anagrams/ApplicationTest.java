@@ -41,32 +41,32 @@ public class ApplicationTest {
     @Test
     public void testMain_noArgs() throws Exception {
         Application.main(new String[]{});
-        assertEquals("Error: invalid number of arguments\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
+        assertEquals("Error: invalid number of arguments\nUsage: java -jar <app>.jar [af][md] pathToFile\n", outContent.toString());
     }
 
     @Test
     public void testMain_invalidFlagCount() throws Exception {
         Application.main(new String[]{"file", "aff"});
-        assertEquals("Error: invalid flags\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
+        assertEquals("Error: invalid flags\nUsage: java -jar <app>.jar [af][md] pathToFile\n", outContent.toString());
     }
 
     @Test
     public void testMain_invalidFlags() throws Exception {
         Application.main(new String[]{"file", "cf"});
-        assertEquals("Error: invalid flags\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
+        assertEquals("Error: invalid flags\nUsage: java -jar <app>.jar [af][md] pathToFile\n", outContent.toString());
     }
     
     @Test
     public void testMain_fileDoesNotExist() throws Exception {
         Application.main(new String[]{"file"});
-        assertEquals("Error: file doesn't exist or is not readable\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
+        assertEquals("Error: file doesn't exist or is not readable\nUsage: java -jar <app>.jar [af][md] pathToFile\n", outContent.toString());
     }
 
     @Test
     public void testMain_fileNotReadable() throws Exception {
         testFile.setReadable(false);
         Application.main(new String[]{testFile.getAbsolutePath()});
-        assertEquals("Error: file doesn't exist or is not readable\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
+        assertEquals("Error: file doesn't exist or is not readable\nUsage: java -jar <app>.jar [af][md] pathToFile\n", outContent.toString());
     }
 
     @Test

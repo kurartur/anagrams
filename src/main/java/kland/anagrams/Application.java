@@ -27,7 +27,7 @@ public class Application {
         }
         String flags = "";
         if (args.length == 2) {
-            if (args[0].length() > 2 || !args[0].matches("^([af]?[md]?)|([md]?[af]?)&")) {
+            if (args[0].length() > 2 || !args[0].matches("^[afmd]{0,2}$")) {
                 userError("Error: invalid flags");
                 return;
             }
@@ -78,7 +78,7 @@ public class Application {
 
     private static void userError(String error) {
         System.out.println(error);
-        System.out.println("Usage: java -jar <file> [<word/line buffer>]");
+        System.out.println("Usage: java -jar <app>.jar [af][md] pathToFile");
     }
 
 }
