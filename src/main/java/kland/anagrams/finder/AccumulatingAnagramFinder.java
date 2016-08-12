@@ -7,6 +7,11 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * Iterates over words grouping them by charset
+ * After words are grouped, filters groups that have only one word
+ * Iterates words only one time. Fast for large amount of words, but might use a lot of memory for storing groups
+ */
 public class AccumulatingAnagramFinder implements AnagramFinder {
 
     Map<CharacterSet, Set<String>> wordGroups = new HashMap<>();

@@ -1,22 +1,16 @@
 package kland.anagrams.wordprovider;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 
 public abstract class FileWordProvider implements WordProvider {
 
     protected File file;
-    protected FileReader fileReader;
 
-    public FileWordProvider(File file) throws FileNotFoundException {
+    public FileWordProvider(File file) throws IOException {
+        if (!file.exists() || !file.canRead()) {
+            throw new IOException("Error: file doesn't exist or is not readable");
+        }
         this.file = file;
-        this.fileReader = new FileReader(file);
-    }
-
-    protected BufferedReader getReader() {
-        return new BufferedReader(fileReader);
     }
 
 }

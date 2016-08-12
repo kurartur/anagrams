@@ -7,9 +7,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class FileLineIterator
-        implements Iterator<String>
-{
+public class FileLineIterator implements Iterator<String> {
+
     private FileReader reader;
     private BufferedReader in = null;
     private String string = null;
@@ -25,7 +24,9 @@ public class FileLineIterator
             }
         } catch(IOException ioe) {
             string = null;
-            if( in != null ) try{ in.close(); } catch( IOException ex2 ) { }
+            if(in != null) try{
+                in.close();
+            } catch(IOException ex2) { }
             in = null;
             throw ioe;
         }
@@ -40,31 +41,33 @@ public class FileLineIterator
     public String next() throws NoSuchElementException {
         String returnString = string;
         try {
-            if( string == null ) {
-                throw new NoSuchElementException( "Next line is not available" );
+            if(string == null) {
+                throw new NoSuchElementException("Next line is not available");
             } else {
                 string = in.readLine();
-                if( string == null && in != null ) {
+                if(string == null && in != null) {
                     in.close();
                     in = null;
                 }
             }
-        } catch( Exception ex ) {
-            throw new NoSuchElementException( "Exception caught in FileLineIterator.next() " + ex );
+        } catch (Exception ex) {
+            throw new NoSuchElementException("Exception caught in FileLineIterator.next() " + ex);
         }
         return returnString;
     }
 
     @Override
     public void remove() {
-        throw new UnsupportedOperationException( "FileLineIterator.remove() is not supported" );
+        throw new UnsupportedOperationException("FileLineIterator.remove() is not supported");
     }
 
     @Override
     protected void finalize() throws Throwable {
         try {
             string = null;
-            if( in != null ) try{ in.close(); } catch( Exception ex ) { }
+            if(in != null) try{
+                in.close();
+            } catch (Exception ex) { }
             in = null;
         } finally {
             super.finalize();

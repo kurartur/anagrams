@@ -5,12 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class DirectFileWordProvider implements WordProvider {
+/**
+ * Provides iterator over words directly from file.
+ * Slow, but doesn't consume memory.
+ */
+public class DirectFileWordProvider extends FileWordProvider {
 
-    private File file;
-
-    public DirectFileWordProvider(File file) throws FileNotFoundException {
-        this.file = file;
+    public DirectFileWordProvider(File file) throws IOException {
+        super(file);
     }
 
     @Override

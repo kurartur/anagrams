@@ -18,7 +18,7 @@ public class ApplicationTest {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private File testFile;
 
-    private TestableApplication application = new TestableApplication();
+    private Application application = new Application();
     private AnagramFinder anagramFinder = mock(AnagramFinder.class);
     private Consumer<Set<String>> anagramConsumer = mock(Consumer.class);
     private WordProvider wordProvider = mock(WordProvider.class);
@@ -28,6 +28,9 @@ public class ApplicationTest {
         System.setOut(new PrintStream(outContent));
         testFile = File.createTempFile("test", null);
         testFile.deleteOnExit();
+        application.setWordProvider(wordProvider);
+        application.setAnagramConsumer(anagramConsumer);
+        application.setAnagramFinder(anagramFinder);
     }
 
     @After
@@ -36,63 +39,47 @@ public class ApplicationTest {
     }
 
     @Test
-    public void testRun_noArgs() throws Exception {
-        application.run(new String[]{});
+    public void testMain_noArgs() throws Exception {
+        Application.main(new String[]{});
         assertEquals("Error: invalid number of arguments\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
     }
 
     @Test
-    public void testRun_fileDoesNotExist() throws Exception {
-        application.run(new String[]{"file"});
+    public void testMain_invalidFlagCount() throws Exception {
+        Application.main(new String[]{"file", "aff"});
+        assertEquals("Error: invalid flags\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
+    }
+
+    @Test
+    public void testMain_invalidFlags() throws Exception {
+        Application.main(new String[]{"file", "cf"});
+        assertEquals("Error: invalid flags\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
+    }
+    
+    @Test
+    public void testMain_fileDoesNotExist() throws Exception {
+        Application.main(new String[]{"file"});
         assertEquals("Error: file doesn't exist or is not readable\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
     }
 
     @Test
-    public void testRun_fileNotReadable() throws Exception {
+    public void testMain_fileNotReadable() throws Exception {
         testFile.setReadable(false);
-        application.run(new String[]{testFile.getAbsolutePath()});
+        Application.main(new String[]{testFile.getAbsolutePath()});
         assertEquals("Error: file doesn't exist or is not readable\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
-    }
-
-    @Test
-    public void testRun_fileNotFound() throws Exception {
-        new TestableApplication() {
-            @Override
-            protected WordProvider getWordProvider(File file) throws FileNotFoundException {
-                throw new FileNotFoundException("File not found");
-            }
-        }.run(new String[]{testFile.getAbsolutePath(), "10"});
-        assertEquals("Error: file not found\nUsage: java -jar <file> [<word/line buffer>]\n", outContent.toString());
     }
 
     @Test
     public void testRun_exception() throws Exception {
         doThrow(new RuntimeException("any error")).when(anagramFinder).find(wordProvider, anagramConsumer);
-        application.run(new String[]{testFile.getAbsolutePath(), "10"});
+        application.run();
         assertEquals("Error: any error\n", outContent.toString());
     }
 
     @Test
     public void testRun() throws Exception {
-        application.run(new String[]{testFile.getAbsolutePath(), "3"});
+        application.run();
         verify(anagramFinder, times(1)).find(wordProvider, anagramConsumer);
     }
 
-    private class TestableApplication extends Application {
-
-        @Override
-        protected WordProvider getWordProvider(File file) throws IOException {
-            return wordProvider;
-        }
-
-        @Override
-        protected AnagramFinder getAnagramFinder() throws FileNotFoundException {
-            return anagramFinder;
-        }
-
-        @Override
-        protected Consumer<Set<String>> getAnagramConsumer() {
-            return anagramConsumer;
-        }
-    }
 }

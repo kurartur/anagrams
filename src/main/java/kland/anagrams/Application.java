@@ -1,9 +1,11 @@
 package kland.anagrams;
 
 import kland.anagrams.consumer.ConsoleAnagramConsumer;
+import kland.anagrams.finder.AccumulatingAnagramFinder;
 import kland.anagrams.finder.AnagramFinder;
 import kland.anagrams.finder.FlushingAnagramFinder;
 import kland.anagrams.wordprovider.DirectFileWordProvider;
+import kland.anagrams.wordprovider.MemoryFileWordProvider;
 import kland.anagrams.wordprovider.WordProvider;
 
 import java.io.File;
@@ -14,52 +16,67 @@ import java.util.function.Consumer;
 
 public class Application {
 
-    public static void main(String[] args) {
-        new Application().run(args);
-    }
+    private WordProvider wordProvider;
+    private AnagramFinder anagramFinder;
+    private Consumer<Set<String>> anagramConsumer;
 
-    public void run(String[] args) {
+    public static void main(String[] args) {
         if (args.length == 0 || args.length > 2) {
             userError("Error: invalid number of arguments");
             return;
         }
-        File file = new File(args[0]);
-        if (!file.exists() || !file.canRead()) {
-            userError("Error: file doesn't exist or is not readable");
+        String flags = "";
+        if (args.length == 2) {
+            if (args[0].length() > 2 || !args[0].matches("^([af]?[md]?)|([md]?[af]?)&")) {
+                userError("Error: invalid flags");
+                return;
+            }
+            flags = args[0];
+        }
+
+        File file = new File(args.length == 1 ? args[0] : args[1]);
+        WordProvider wordProvider;
+        try {
+            wordProvider = flags.contains("d") ? new DirectFileWordProvider(file) : new MemoryFileWordProvider(file);
+        } catch (IOException ioe) {
+            userError(ioe.getMessage());
             return;
         }
 
+        AnagramFinder anagramFinder = flags.contains("f") ? new FlushingAnagramFinder() : new AccumulatingAnagramFinder();
+
+        Application application = new Application();
+        application.setWordProvider(wordProvider);
+        application.setAnagramFinder(anagramFinder);
+        application.setAnagramConsumer(new ConsoleAnagramConsumer());
+        application.run();
+    }
+
+    public void run() {
         try {
-            Long startTime = System.currentTimeMillis();
-            WordProvider wordProvider = getWordProvider(file);
-            AnagramFinder anagramFinder = getAnagramFinder();
-            Consumer<Set<String>> consumer = getAnagramConsumer();
-            anagramFinder.find(wordProvider, consumer);
-            System.out.println(System.currentTimeMillis() - startTime);
-        } catch (FileNotFoundException fnfe) {
-            userError("Error: file not found");
+            anagramFinder.find(wordProvider, anagramConsumer);
         } catch (Exception e) {
             internalError("Error: " + e.getMessage());
         }
     }
 
-    protected WordProvider getWordProvider(File file) throws IOException {
-        return new DirectFileWordProvider(file);
+    public void setWordProvider(WordProvider wordProvider) {
+        this.wordProvider = wordProvider;
     }
 
-    protected AnagramFinder getAnagramFinder() throws FileNotFoundException {
-        return new FlushingAnagramFinder();
+    public void setAnagramFinder(AnagramFinder anagramFinder) {
+        this.anagramFinder = anagramFinder;
     }
 
-    protected Consumer<Set<String>> getAnagramConsumer() {
-        return new ConsoleAnagramConsumer();
+    public void setAnagramConsumer(Consumer<Set<String>> anagramConsumer) {
+        this.anagramConsumer = anagramConsumer;
     }
 
-    private void internalError(String error) {
+    private static void internalError(String error) {
         System.out.println(error);
     }
 
-    private void userError(String error) {
+    private static void userError(String error) {
         System.out.println(error);
         System.out.println("Usage: java -jar <file> [<word/line buffer>]");
     }

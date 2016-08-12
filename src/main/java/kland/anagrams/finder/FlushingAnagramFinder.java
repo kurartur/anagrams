@@ -8,6 +8,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * Takes one not checked charset and iterates over words searching for words with same charset
+ * After anagrams for one particular charset was found, sends them to consumer
+ * Iterates words multiple times, might be slow for large amount of words but does not use a lot of memory
+ */
 public class FlushingAnagramFinder implements AnagramFinder {
 
     Set<CharacterSet> usedCharsets = new HashSet<>();

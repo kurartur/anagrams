@@ -8,11 +8,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class MemoryFileWordProvider implements WordProvider{
+/**
+ * Reads words from file into memory, provides iterator over Set that is stored in memory
+ * Fast, but can consume a lot of memory.
+ */
+public class MemoryFileWordProvider extends FileWordProvider {
 
     protected Set<String> words = new HashSet<>();
 
     public MemoryFileWordProvider(File file) throws IOException {
+        super(file);
         readWordsIntoMemory(file);
     }
 
